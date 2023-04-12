@@ -1,0 +1,68 @@
+﻿SER 502 Final Project
+
+
+Team 16
+
+
+Sudheer Reddy Kunduru
+Swapnil Mukeshbhai Chadotra
+Jay Yogeshbhai Patel
+Manan Hasmukhkumar Patel
+Jashmin Mineshkumar Patel
+
+
+Contributions:
+
+
+Swapnil Mukeshbhai Chadotra
+
+
+* Studied and analyzed the syntax and design of similar imperative languages and determined the best practices used in terms of syntax
+* Created grammar for introductory features of the language
+
+
+Jay Yogeshbhai Patel
+
+
+* Analyzed various tools for performing lexical analysis and parsing
+
+
+Manan Hasmukhkumar Patel
+
+
+* Performed Research on techniques and tools used for semantic evaluation and interpretation/execution of the program code.
+
+
+Jashmin Mineshkumar Patel
+
+
+* Determined the best grammar and BNF notations and studied techniques used by modern programming languages for performing lexical analysis
+
+
+Sudheer Reddy Kunduru
+
+
+* Finalized the semantics of the language
+* Worked on complex features of the grammar including control structures and typing
+
+
+
+
+Implementation Plan:
+
+
+Week 1: 
+
+
+* Implementation of Lexical Analyzer using python
+* Design and Implementation of Definite Clause Grammar using prolog
+
+
+Week 2: 
+
+
+* Refining and finalizing the parse tree generation
+* Coding the semantic evaluator using prolog
+* Implementation of the interpreter
+* Testing the lexical analyzer, parser and evaluator with full programs
+* Handling errors within user programs
