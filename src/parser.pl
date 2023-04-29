@@ -1,3 +1,4 @@
+:- use_rendering(svgtree).
 :- table main_block/2.
 program(program(CodeBlock)) --> [main], block(CodeBlock).
 
@@ -31,7 +32,10 @@ variable_datatype(datatype(bool)) --> [bool].
 variable_datatype(datatype(str)) --> [str].
 
 
-leftRecursionRemovedCommand(command_assign(Iden, =, Expr, ;)) --> variable(Iden), [=], simple_expression(Expr), [;].
+% leftRecursionRemovedCommand(command_assign(Iden, =, Expr, ;)) --> variable(Iden), [=], simple_expression(Expr), [;].
+% leftRecursionRemovedCommand(command_assign(Iden, =, Expr, ;,Cmd)) --> variable(Iden), [=], simple_expression(Expr), [;],leftRecursionRemovedCommand(Cmd).
+leftRecursionRemovedCommand(command_assign(T)) --> assignment(T).
+leftRecursionRemovedCommand(command_assign(T,Cmd)) --> assignment(T),leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
@@ -46,6 +50,7 @@ leftRecursionRemovedCommand(if(if, Bool, Cmd)) --> [if], ['('], booleanCondition
 leftRecursionRemovedCommand(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right, [;].
 leftRecursionRemovedCommand(while_loop(Boolean, Cmd)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(print(Arg)) --> [print], print_statement(Arg), [;].
+leftRecursionRemovedCommand(print(Arg,Cmd)) --> [print], print_statement(Arg), [;],leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(increment(Iden, +, +)) --> variable(Iden), [+], [+], [;].
 leftRecursionRemovedCommand(decrement(Iden, -, -)) --> variable(Iden), [-], [-], [;].
 leftRecursionRemovedCommand(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr), [;].
@@ -108,7 +113,8 @@ variable(variable(Iden)) --> [Iden], {atom(Iden), not(number(Iden)), not(member(
     '!=', ++, --, +, -, *, /]))}.
 number(number(Num)) --> [Num], { number(Num) }.
 
-assignment(assign(Iden,=,Expr)) --> variable(Iden),[=],simple_expression(Expr).
+assignment(assign(Iden,=,Expr,;)) --> variable(Iden),[=],simple_expression(Expr),[;].
+assignment(assign(Iden,=,Expr,;)) --> variable(Iden),[=],booleanCondition(Expr),[;].
 arithmetic_assign(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr).
 arithmetic_assign(substract_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr).
 arithmetic_assign(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr).
