@@ -1,4 +1,3 @@
-:- use_rendering(svgtree).
 :- table main_block/2.
 program(program(CodeBlock)) --> [main], block(CodeBlock).
 
@@ -15,25 +14,27 @@ declaration(declaration_node(Dec)) --> const_declaration(Dec).
 declaration(declaration_node(Dec)) --> var_declaration(Dec).
 
 const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;].
-const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;].
+const_declaration(const_declaration(const, Dtype, Iden, =, Bool, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Bool), [;].
+const_declaration(const_declaration(const, Dtype, Iden, =, Str, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], string_(Str), [;].
 const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;], declaration(Rest).
-const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;], declaration(Rest).
+const_declaration(const_declaration(const, Dtype, Iden, =, Bool, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Bool), [;], declaration(Rest).
+const_declaration(const_declaration(const, Dtype, Iden, =, Str, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], string_(Str), [;], declaration(Rest).
 
 
 var_declaration(var_declaration(var, Dtype, Iden, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [;].
 var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;].
 var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;].
+var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], string_(Str), [;].
 var_declaration(var_declaration(var, Dtype, Iden, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [;], declaration(Rest).
 var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;], declaration(Rest).
 var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;], declaration(Rest).
+var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [=], string_(Str), [;], declaration(Rest).
 
 variable_datatype(datatype(int)) --> [int].
 variable_datatype(datatype(bool)) --> [bool].
 variable_datatype(datatype(str)) --> [str].
 
 
-% leftRecursionRemovedCommand(command_assign(Iden, =, Expr, ;)) --> variable(Iden), [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(command_assign(Iden, =, Expr, ;,Cmd)) --> variable(Iden), [=], simple_expression(Expr), [;],leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(command_assign(T)) --> assignment(T).
 leftRecursionRemovedCommand(command_assign(T,Cmd)) --> assignment(T),leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
@@ -112,6 +113,7 @@ variable(variable(Iden)) --> [Iden], {atom(Iden), not(number(Iden)), not(member(
     if, elif, else, while, range, and, or, not, in, range, <, >, <=, >=, ==,
     '!=', ++, --, +, -, *, /]))}.
 number(number(Num)) --> [Num], { number(Num) }.
+string_(string(String)) --> [String], {string(String)}.
 
 assignment(assign(Iden,=,Expr,;)) --> variable(Iden),[=],simple_expression(Expr),[;].
 assignment(assign(Iden,=,Expr,;)) --> variable(Iden),[=],booleanCondition(Expr),[;].
@@ -119,3 +121,59 @@ arithmetic_assign(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_e
 arithmetic_assign(substract_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr).
 arithmetic_assign(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr).
 arithmetic_assign(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr).
+
+
+program_eval(Prog, Z) :-
+    program_eval_(P, [], Env).
+
+program_eval_(main(CodeBlock), PrevEnv, Env) :-
+    block_evaluation(CodeBlock, PrevEnv, Env).
+
+block_evaluation(code_block(SubBlock), PrevEnv, Env):-
+    sub_block_evaluation(SubBlock, PrevEnv, Env).
+
+block_evaluation(empty(), PrevEnv, Env).
+
+sub_block_evaluation(sub_block(Dec, Rest), PrevEnv, Env) :- declaration_evaluation(Dec, PrevEnv, MediatorPrevEnv), sub_block_evaluation(Rest, MediatorPrevEnv, Env).
+% sub_block_evaluation(sub_block(Cmd, Rest), PrevEnv, Env) :- eval_commands(Commands, PrevEnv, MediatorPrevEnv), sub_block_evaluation(Statements, MediatorPrevEnv, Env).
+sub_block_evaluation(sub_block(Dec), PrevEnv, Env) :- declaration_evaluation(Declarations, PrevEnv, Env).
+% sub_block_evaluation(sub_block(Cmd), PrevEnv, Env) :- eval_commands(Commands, PrevEnv, Env).
+sub_block_evaluation().
+
+declaration_evaluation(const_declaration(const, Datatype, Iden, =, Val, ;, D), PrevEnv, Env) :-
+    is_const_declared(Iden, N, PrevEnv, TempEnv),
+    declaration_evaluation(D, TempEnv, Env).
+
+% This predicate evaluates a constant declaration, updating the environment.
+declaration_evaluation(const_declaration(const, I, '=', N, ';'), PrevEnv, Env) :-
+    is_const_declared(I, N, PrevEnv, Env).
+
+% This predicate evaluates a variable declaration, updating the environment.
+declaration_evaluation(var_declaration(var, I, ';', D), PrevEnv, Env) :-
+    is_variable_declared(I, PrevEnv, TempEnv),
+    declaration_evaluation(D, TempEnv, Env).
+
+% This predicate evaluates a variable declaration, updating the environment.
+declaration_evaluation(var_declaration(var, I, ';'), PrevEnv, Env) :-
+    is_variable_declared(I, PrevEnv, Env).
+
+
+is_const_declared(identifier(I), number(N), Env, [(I, N) | Env]):-
+    \+ memberchk((I, _), Env).
+
+% This predicate checks if a variable identifier is already declared and updates the environment.
+is_variable_declared(identifier(I), Env, [(I, _)|Env]) :-
+    \+ memberchk((I, _), Env).
+
+% This predicate checks if a variable identifier is already declared and returns the existing environment.
+is_variable_declared(identifier(I), Env, Env) :-
+    memberchk((I , _), Env).
+
+valid_datatype_value(int, Value) :-
+    integer(Value).
+valid_datatype_value(string, Value) :-
+    string(Value).
+valid_datatype_value(int, Value) :-
+    integer(Value).
+valid_datatype_value(bool, Value) :-
+    (Value == true ; Value == false).
