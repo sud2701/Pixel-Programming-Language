@@ -1,0 +1,25 @@
+main {
+var int a = 100;
+const bool p = (6 * 3 - 2) < 20; 
+const str x = "Hello"; 
+var int q = a * 5; 
+if (a == 100) { 
+a = a + q; 
+a = a - q; 
+q = a - q; 
+} else { 
+q = 0; 
+} 
+for a in range(1,10,2) { 
+print(a); 
+} 
+for a in range(5) { 
+print(a); 
+}
+if(a == 5) { 
+print("Successful"); 
+} elseif(a == 9) { 
+print("Successful until the last but one loop"); 
+} else { 
+print("Program Unsuccessful"); }
+}
