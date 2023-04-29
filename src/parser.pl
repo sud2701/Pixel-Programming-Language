@@ -121,20 +121,16 @@ extract_value(Expr, PrevEnv, Env, Num) :- eval_ternary_expression(Expr, PrevEnv,
 
 
 leftRecursionRemovedCommand(command_assign(T)) --> assignment(T), [;].
-leftRecursionRemovedCommand(command_assign(T,Cmd)) --> assignment(T),[;],leftRecursionRemovedCommand(Cmd).
+leftRecursionRemovedCommand(command_assign(T,Cmd)) --> assignment(T), [;], leftRecursionRemovedCommand(Cmd).
 
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
 leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
 leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
 leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
 
 leftRecursionRemovedCommand(for_loop_range(Iden, in, range, From, To, Jump, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd).
@@ -150,9 +146,8 @@ leftRecursionRemovedCommand(if_else(if, Bool, Cmd, else, Cmd1, Cmd2)) --> [if], 
 leftRecursionRemovedCommand(if_else_if(if, Bool, Cmd, Rest, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest), leftRecursionRemovedCommand(Cmd1).
 leftRecursionRemovedCommand(if(if, Bool, Cmd, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
 
-leftRecursionRemovedCommand(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right, [;], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(ternary_operator(Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right, [;], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right, [;].
+
 leftRecursionRemovedCommand(ternary_operator(Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right, [;].
 
 leftRecursionRemovedCommand(while_loop(Boolean, Cmd)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd).
@@ -167,17 +162,17 @@ leftRecursionRemovedCommand(decrement(Iden, -, -)) --> variable(Iden), [-], [-],
 leftRecursionRemovedCommand(decrement(Iden, -, -, Cmd)) --> variable(Iden), [-], [-], [;], leftRecursionRemovedCommand(Cmd).
 
 
-leftRecursionRemovedCommand(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr), [;].
-leftRecursionRemovedCommand(add_(Iden, +, =, Expr, Cmd)) --> variable(Iden), [+], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
+% leftRecursionRemovedCommand(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr), [;].
+% leftRecursionRemovedCommand(add_(Iden, +, =, Expr, Cmd)) --> variable(Iden), [+], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
 
-leftRecursionRemovedCommand(sub_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr), [;].
-leftRecursionRemovedCommand(sub_(Iden, -, =, Expr, Cmd)) --> variable(Iden), [-], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
+% leftRecursionRemovedCommand(sub_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr), [;].
+% leftRecursionRemovedCommand(sub_(Iden, -, =, Expr, Cmd)) --> variable(Iden), [-], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
 
-leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr), [;].
-leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr, Cmd)) --> variable(Iden), [*], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
+% leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr), [;].
+% leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr, Cmd)) --> variable(Iden), [*], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
 
-leftRecursionRemovedCommand(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr), [;].
-leftRecursionRemovedCommand(divide_(Iden, /, =, Expr, Cmd)) --> variable(Iden), [/], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
+% leftRecursionRemovedCommand(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr), [;].
+% leftRecursionRemovedCommand(divide_(Iden, /, =, Expr, Cmd)) --> variable(Iden), [/], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
 
 leftRecursionRemovedCommand(command_block(Blk)) --> block(Blk).
 
@@ -324,45 +319,45 @@ command_evaluation(if(if, Bool, _, Cmd1), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_evaluation(Cmd1, TempEnv, Env).
 
-command_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :- 
+command_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :- 
+command_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_evaluation(Cmd1, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :- 
+command_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_evaluation(Cmd1, TempTempTempEnv, Env).
 
-command_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :- 
+command_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_evaluation(Cmd1, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_evaluation(Cmd2, TempTempTempEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :- 
+command_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :- 
+command_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     else_if_evaluation(Rest, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :- 
+command_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_evaluation(Cmd, TempTempTempEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :- 
+command_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     else_if_evaluation(Rest, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
@@ -385,40 +380,40 @@ command_evaluation(print(Print, Cmd), PrevEnv, Env):-
     command_evaluation(Cmd, TempEnv, Env).
 
 command_evaluation(increment(Iden, +, +), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
     Increment is Value + 1,
     update_environment(Iden, Increment, TempEnv, Env).
 
 command_evaluation(increment(Iden, +, +, Cmd), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
     Increment is Value + 1,
     update_environment(Iden, Increment, TempEnv, TempTempEnv),
     command_evaluation(Cmd, TempTempEnv, Env).
 
 command_evaluation(decrement(Iden, -, -), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
     Decrement is Value - 1,
     update_environment(Iden, Decrement, TempEnv, Env).
 
 command_evaluation(decrement(Iden, -, -, Cmd), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
     Decrement is Value - 1,
     update_environment(Iden, Decrement, TempEnv, TempTempEnv),
     command_evaluation(Cmd, TempTempEnv, Env).
 
 command_evaluation(add_(Iden, +, =, Expr), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 + Value2,
     update_environment(Iden, Result, TempEnv, Env).
 
 command_evaluation(add_(Iden, +, =, Expr, Cmd), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 + Value2,
@@ -426,14 +421,14 @@ command_evaluation(add_(Iden, +, =, Expr, Cmd), PrevEnv, Env) :-
     command_evaluation(Cmd, TempTempEnv, Env).
 
 command_evaluation(sub_(Iden, -, =, Expr), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 - Value2,
     update_environment(Iden, Result, TempEnv, Env).
 
 command_evaluation(sub_(Iden, -, =, Expr, Cmd), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 - Value2,
@@ -441,14 +436,14 @@ command_evaluation(sub_(Iden, -, =, Expr, Cmd), PrevEnv, Env) :-
     command_evaluation(Cmd, TempTempEnv, Env).
 
 command_evaluation(multiply_(Iden, *, =, Expr), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 * Value2,
     update_environment(Iden, Result, TempEnv, Env).
 
 command_evaluation(multiply_(Iden, *, =, Expr, Cmd), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 * Value2,
@@ -456,18 +451,29 @@ command_evaluation(multiply_(Iden, *, =, Expr, Cmd), PrevEnv, Env) :-
     command_evaluation(Cmd, TempTempEnv, Env).
 
 command_evaluation(divide_(Iden, /, =, Expr), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 / Value2,
     update_environment(Iden, Result, TempEnv, Env).
 
 command_evaluation(divide_(Iden, /, =, Expr, Cmd), PrevEnv, Env) :-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
     evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
     Result is Value1 / Value2,
     update_environment(Iden, Result, TempEnv, TempTempEnv),
+    command_evaluation(Cmd, TempTempEnv, Env).
+
+command_evaluation(ternary_operator(Bool, '?', Expr1, :, Expr2), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, BoolResult),
+    (BoolResult = true -> command_ternary_evaluation(Expr1, TempEnv, Env)
+    ; command_ternary_evaluation(Expr2, TempEnv, Env)).
+
+command_evaluation(ternary_operator(Bool, '?', Expr1, :, Expr2, Cmd), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, BoolResult),
+    (BoolResult = true -> command_ternary_evaluation(Expr1, TempEnv, TempTempEnv)
+    ; command_ternary_evaluation(Expr2, TempEnv, TempTempEnv)),
     command_evaluation(Cmd, TempTempEnv, Env).
 
 command_evaluation(command_block(Block), PrevEnv, Env) :-
@@ -496,26 +502,26 @@ while_evaluaion(Bool, Cmd, PrevEnv, Env) :-
 while_evaluaion(B, _, PrevEnv, Env) :-
     evaluate_boolean_env(B, PrevEnv, Env, false).
 
-else_if_evaluation(elif(elif, Bool, Cmd), PrevEnv, Env) :- 
+else_if_evaluation(elif(elif, Bool, Cmd), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, _), PrevEnv, Env) :- 
+else_if_evaluation(elif(elif, Bool, _), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, Env, false).
 
-else_if_evaluation(elif(elif, Bool, Cmd, _), PrevEnv, Env) :- 
+else_if_evaluation(elif(elif, Bool, Cmd, _), PrevEnv, Env) :-
     evaluate_boolean_env(Bool,PrevEnv,TempEnv,true),
     command_evaluation(Cmd, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, _, Rest), PrevEnv, Env) :- 
+else_if_evaluation(elif(elif, Bool, _, Rest), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv,false),
     else_if_evaluation(Rest, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, Cmd, else, _),PrevEnv,Env) :- 
+else_if_evaluation(elif(elif, Bool, Cmd, else, _),PrevEnv,Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv,true),
     command_evaluation(Cmd, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, _, else, Cmd1), PrevEnv, Env) :- 
+else_if_evaluation(elif(elif, Bool, _, else, Cmd1), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv,false),
     command_evaluation(Cmd1, TempEnv, Env).
 % for_loop_range_evaluation(Iden, Current, To, Jump, Cmd, PrevEnv, Env) :-
@@ -545,7 +551,8 @@ for_loop_evaluation(Bool, Expr, Cmd, PrevEnv, Env) :-
     ->  evaluate_command_env(Cmd, TempEnv, TempTempEnv),
         (   is_assignment(Expr)
         ->  assignment_evalutation(Expr, TempTempEnv, TempTempTempEnv)
-        ;   evaluate_extract(Expr, TempTempEnv, TempTempTempEnv, _)
+        ;
+        evaluate_extract(Expr, TempTempEnv, TempTempTempEnv, _)
         ),
         update_variables(TempTempTempEnv, PrevEnv, TempTempTempTempEnv),
         for_loop_evaluation(Bool, Expr, Cmd, TempTempTempTempEnv, Env)
@@ -587,37 +594,334 @@ else_if_ladder(elif(elif, Bool, Cmd, Rest)) --> [else, if], ['('], booleanCondit
 else_if_ladder(elif(elif, Bool, Cmd, else, Cmd1)) --> [else, if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), [else], leftRecursionRemovedCommand(Cmd1).
 
 commandForTernary(command_assign(T)) --> assignment(T).
-commandForTernary(command_assign(T,Cmd)) --> assignment(T),[;], commandForTernary(Cmd).
+commandForTernary(command_assign(T,Cmd)) --> assignment(T), [;], commandForTernary(Cmd).
+
 commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], arithmetic_assign(Expr), [')'], leftRecursionRemovedCommand(Cmd).
 commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
+
+commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+
 commandForTernary(for_loop_range(Iden, in, range, From, To, Jump, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd).
 commandForTernary(for_loop_range_single(Iden, in, range, To, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(To), [')'], leftRecursionRemovedCommand(Cmd).
+
+commandForTernary(for_loop_range(Iden, in, range, From, To, Jump, Cmd, Cmd1)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+commandForTernary(for_loop_range_single(Iden, in, range, To, Cmd, Cmd1)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(To), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+
 commandForTernary(if_else(if, Bool, Cmd, else, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], commandForTernary(Cmd), [else], leftRecursionRemovedCommand(Cmd1).
 commandForTernary(if_else_if(if, Bool, Cmd, Rest)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest).
 commandForTernary(if(if, Bool, Cmd)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right, [;], commandForTernary(Cmd).
-commandForTernary(ternary_operator(Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right, [;], commandForTernary(Cmd).
-commandForTernary(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right.
+
+commandForTernary(if_else(if, Bool, Cmd, else, Cmd1, Cmd2)) --> [if], ['('], booleanCondition(Bool), [')'], commandForTernary(Cmd), [else], leftRecursionRemovedCommand(Cmd1), commandForTernary(Cmd2).
+commandForTernary(if_else_if(if, Bool, Cmd, Rest, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest), commandForTernary(Cmd1).
+commandForTernary(if(if, Bool, Cmd, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+
+commandForTernary(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right, [;], commandForTernary(Cmd).
+commandForTernary(ternary_operator(Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], leftRecursionRemovedCommand(Expr1), [:], leftRecursionRemovedCommand(Expr2), optional_parenthesis_right, commandForTernary(Cmd).
+commandForTernary(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right.
 commandForTernary(ternary_operator(Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right.
+
+
 commandForTernary(while_loop(Boolean, Cmd)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd).
+commandForTernary(while_loop(Boolean, Cmd, Cmd1)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
+
 commandForTernary(print(Arg)) --> [print], print_statement(Arg).
 commandForTernary(print(Arg, Cmd)) --> [print], print_statement(Arg), [;], commandForTernary(Cmd).
+
 commandForTernary(increment(Iden, +, +)) --> variable(Iden), [+], [+].
 commandForTernary(increment(Iden, +, +, Cmd)) --> variable(Iden), [+], [+], [;], commandForTernary(Cmd).
+
 commandForTernary(decrement(Iden, -, -)) --> variable(Iden), [-], [-].
 commandForTernary(decrement(Iden, -, -, Cmd)) --> variable(Iden), [-], [-], [;], commandForTernary(Cmd).
+
 commandForTernary(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr).
 commandForTernary(add_(Iden, +, =, Expr, Cmd)) --> variable(Iden), [+], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
+
 commandForTernary(sub_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr).
 commandForTernary(sub_(Iden, -, =, Expr, Cmd)) --> variable(Iden), [-], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
+
 commandForTernary(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr).
 commandForTernary(multiply_(Iden, *, =, Expr, Cmd)) --> variable(Iden), [*], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
+
 commandForTernary(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr).
 commandForTernary(divide_(Iden, /, =, Expr, Cmd)) --> variable(Iden), [/], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
+
+evaluate_command_for_ternary_env(Cmd, PrevEnv, Env) :-
+    command_ternary_evaluation(Cmd, PrevEnv, TempEnv),
+    (var(TempEnv) -> Env = PrevEnv; Env = TempEnv).
+
+command_ternary_evaluation(command_assign(T), PrevEnv, Env) :-
+    assignment_evalutation(T, PrevEnv, Env).
+
+command_ternary_evaluation(command_assign(T, Cmd), PrevEnv, Env) :-
+    assignment_evalutation(T, PrevEnv, TempEnv),
+    command_ternary_evaluation(Cmd, TempEnv, Env).
+
+command_ternary_evaluation(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd), PrevEnv, Env):-
+    declaration_evaluation(Dec, PrevEnv, TempEnv),
+    for_loop_evaluation(Bool, Expr, Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1), PrevEnv, Env):-
+    declaration_evaluation(Dec, PrevEnv, TempEnv),
+    for_loop_evaluation(Bool, Expr, Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
+
+command_ternary_evaluation(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd), PrevEnv, Env):-
+    assignment_evalutation(Asg, PrevEnv, TempEnv),
+    for_loop_evaluation(Bool, Expr, Cmd, TempEnv, TempTempTempEnv),
+    update_variables(TempTempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1), PrevEnv, Env):-
+    assignment_evalutation(Asg, PrevEnv, TempEnv),
+    for_loop_evaluation(Bool, Expr, Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
+
+command_ternary_evaluation(for_loop_range(variable(Iden), in, range, number(From), number(To), number(Jump), Cmd), PrevEnv, Env) :-
+    \+ member((Iden, var, int, _), PrevEnv),
+    for_loop_range_evaluation(Iden, From, To, Jump, Cmd, [(Iden, var, int, From) | PrevEnv], TempEnv),
+    update_variables(TempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(for_loop_range(variable(Iden), in, range, number(From), number(To), number(Jump), Cmd), PrevEnv, Env) :-
+    member((Iden, var, int, _), PrevEnv),
+    select((Iden, var, int, _), PrevEnv, TempEnv),
+    for_loop_range_evaluation(Iden, From, To, Jump, Cmd, [(Iden, var, int, From) | TempEnv], TempTempEnv),
+    update_variables(TempTempEnv, [(Iden, var, int, From) | TempEnv], Env).
+
+command_ternary_evaluation(for_loop_range(Iden, _, _, _, _, _, _), PrevEnv, _) :-
+    member((Iden, var, Type, _), PrevEnv),
+    Type \= int,
+    writeln('Error: Iden should be of type int').
+
+command_ternary_evaluation(for_loop_range(variable(Iden), in, range, number(From), number(To), number(Jump), Cmd, Cmd1), PrevEnv, Env) :-
+    \+ member((Iden, var, int, _), PrevEnv),
+    for_loop_range_evaluation(Iden, From, To, Jump, Cmd, [(Iden, var, int, From) | PrevEnv], TempEnv),
+    update_variables(TempEnv, PrevEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempEnv, Env).
+
+command_ternary_evaluation(for_loop_range(variable(Iden), in, range, number(From), number(To), number(Jump), Cmd, Cmd1), PrevEnv, Env) :-
+    member((Iden, var, int, _), PrevEnv),
+    select((Iden, var, int, _), PrevEnv, TempEnv),
+    for_loop_range_evaluation(Iden, From, To, Jump, Cmd, [(Iden, var, int, From) | TempEnv], TempTempEnv),
+    update_variables(TempTempEnv, [(Iden, var, int, From) | TempEnv], TempTempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
+
+command_ternary_evaluation(for_loop_range(Iden, _, _, _, _, _, _, _), PrevEnv, _) :-
+    member((Iden, var, Type, _), PrevEnv),
+    Type \= int,
+    writeln('Error: Iden should be of type int').
+
+
+command_ternary_evaluation(for_loop_range_single(variable(Iden), in, range, number(To), Cmd), PrevEnv, Env) :-
+    \+ member((Iden, var, int, _), PrevEnv),
+    for_loop_range_evaluation(Iden, 0, To, 1, Cmd, [(Iden, var, int, 0) | PrevEnv], TempEnv),
+    update_variables(TempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(for_loop_range_single(variable(Iden), in, range, number(To), Cmd), PrevEnv, Env) :-
+    member((Iden, var, int, _), PrevEnv),
+    select((Iden, var, int, _), PrevEnv, TempEnv),
+    for_loop_range_evaluation(Iden, 0, To, 1, Cmd, [(Iden, var, int, 0) | TempEnv], TempTempEnv),
+    update_variables(TempTempEnv, [(Iden, var, int, 0) | TempEnv], Env).
+
+command_ternary_evaluation(for_loop_range_single(Iden, _, _, _, _, _), PrevEnv, _) :-
+    member((Iden, var, Type, _), PrevEnv),
+    Type \= int,
+    writeln('Error: Iden should be of type int').
+
+command_ternary_evaluation(for_loop_range_single(variable(Iden), in, range, number(To), Cmd, Cmd1), PrevEnv, Env) :-
+    \+ member((Iden, var, int, _), PrevEnv),
+    for_loop_range_evaluation(Iden, 0, To, 1, Cmd, [(Iden, var, int, 0) | PrevEnv], TempEnv),
+    update_variables(TempEnv, PrevEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempEnv, Env).
+
+command_ternary_evaluation(for_loop_range_single(variable(Iden), in, range, number(To), Cmd, Cmd1), PrevEnv, Env) :-
+    member((Iden, var, int, _), PrevEnv),
+    select((Iden, var, int, _), PrevEnv, TempEnv),
+    for_loop_range_evaluation(Iden, 0, To, 1, Cmd, [(Iden, var, int, 0) | TempEnv], TempTempEnv),
+    update_variables(TempTempEnv, [(Iden, var, int, 0) | TempEnv], TempTempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
+
+command_ternary_evaluation(for_loop_range_single(Iden, _, _, _, _, _, _), PrevEnv, _) :-
+    member((Iden, var, Type, _), PrevEnv),
+    Type \= int,
+    writeln('Error: Iden should be of type int').
+
+
+% command_ternary_evaluation(ternary_operator(variable(Iden), Bool, '?', Expr1, :, Expr2, Cmd), PrevEnv, Env) :-
+%     member((Iden, var, _, _), PrevEnv),
+%     boolean_evaluation(Bool, PrevEnv, Env, BoolResult),
+%     (BoolResult = true -> eval_ternary_expression(Expr1, PrevEnv, Env, Result)
+%     ; eval_ternary_expression(Expr2, PrevEnv, Env, Result)).
+
+command_ternary_evaluation(if(if, Bool, Cmd), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
+    command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(if(if, Bool, _), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, Env, false).
+
+command_ternary_evaluation(if(if, Bool, Cmd, Cmd1), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
+    command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
+
+command_ternary_evaluation(if(if, Bool, _, Cmd1), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
+    command_ternary_evaluation(Cmd1, TempEnv, Env).
+
+command_ternary_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
+    command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
+    command_ternary_evaluation(Cmd1, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
+    command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
+
+command_ternary_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
+    command_ternary_evaluation(Cmd1, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd2, TempTempTempEnv, Env).
+
+command_ternary_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
+    command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
+    else_if_evaluation(Rest, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
+    command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempTempEnv, Env).
+
+command_ternary_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :-
+    evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
+    else_if_evaluation(Rest, TempEnv, TempTempEnv),
+    update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempTempEnv, Env).
+
+command_ternary_evaluation(while_loop(Bool, Cmd), PrevEnv, Env):-
+    while_evaluaion(Bool, Cmd, PrevEnv, TempEnv),
+    update_variables(TempEnv, PrevEnv, Env).
+
+command_ternary_evaluation(while_loop(Bool, Cmd, Cmd1), PrevEnv, Env):-
+    while_evaluaion(Bool, Cmd, PrevEnv, TempEnv),
+    update_variables(TempEnv, PrevEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd1, TempTempEnv, Env).
+
+command_ternary_evaluation(print(Print), PrevEnv, Env):-
+    eval_print_cmd_(Print, PrevEnv, Env).
+
+command_ternary_evaluation(print(Print, Cmd), PrevEnv, Env):-
+    eval_print_cmd_(Print, PrevEnv, TempEnv),
+    command_ternary_evaluation(Cmd, TempEnv, Env).
+
+command_ternary_evaluation(increment(Iden, +, +), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
+    Increment is Value + 1,
+    update_environment(Iden, Increment, TempEnv, Env).
+
+command_ternary_evaluation(increment(Iden, +, +, Cmd), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
+    Increment is Value + 1,
+    update_environment(Iden, Increment, TempEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempEnv, Env).
+
+command_ternary_evaluation(decrement(Iden, -, -), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
+    Decrement is Value - 1,
+    update_environment(Iden, Decrement, TempEnv, Env).
+
+command_ternary_evaluation(decrement(Iden, -, -, Cmd), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value),
+    Decrement is Value - 1,
+    update_environment(Iden, Decrement, TempEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempEnv, Env).
+
+command_ternary_evaluation(add_(Iden, +, =, Expr), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 + Value2,
+    update_environment(Iden, Result, TempEnv, Env).
+
+command_ternary_evaluation(add_(Iden, +, =, Expr, Cmd), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 + Value2,
+    update_environment(Iden, Result, TempEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempEnv, Env).
+
+command_ternary_evaluation(sub_(Iden, -, =, Expr), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 - Value2,
+    update_environment(Iden, Result, TempEnv, Env).
+
+command_ternary_evaluation(sub_(Iden, -, =, Expr, Cmd), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 - Value2,
+    update_environment(Iden, Result, TempEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempEnv, Env).
+
+command_ternary_evaluation(multiply_(Iden, *, =, Expr), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 * Value2,
+    update_environment(Iden, Result, TempEnv, Env).
+
+command_ternary_evaluation(multiply_(Iden, *, =, Expr, Cmd), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 * Value2,
+    update_environment(Iden, Result, TempEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempEnv, Env).
+
+command_ternary_evaluation(divide_(Iden, /, =, Expr), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 / Value2,
+    update_environment(Iden, Result, TempEnv, Env).
+
+command_ternary_evaluation(divide_(Iden, /, =, Expr, Cmd), PrevEnv, Env) :-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Value1),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Value2),
+    Result is Value1 / Value2,
+    update_environment(Iden, Result, TempEnv, TempTempEnv),
+    command_ternary_evaluation(Cmd, TempTempEnv, Env).
 
 booleanCondition(boolean_true(true)) --> [true].
 booleanCondition(boolean_false(false)) --> [false].
@@ -683,7 +987,6 @@ negate(false, true).
 
 simple_expression(Str) --> string_(Str).
 simple_expression(E0) --> e1(E1), e0(E1, E0).
-simple_expression(parenthesis(E)) --> ['('], simple_expression(E), [')'].
 simple_expression(increment(Iden, +, +)) --> variable(Iden), [+], [+].
 simple_expression(decrement(Iden, -, -)) --> variable(Iden), [-], [-].
 
@@ -694,6 +997,7 @@ e1(E1) --> e2(E2), e1_(E2, E1).
 e1_(EIn, EOut) --> [*], e2(E2), e1_(multiply(EIn, E2), EOut).
 e1_(EIn, EOut) --> [/], e2(E2), e1_(divide(EIn, E2), EOut).
 e1_(E, E) --> [].
+e2(parenthesis(E)) --> ['('], simple_expression(E), [')'].
 e2(I) --> variable(I).
 e2(N) --> number(N).
 
@@ -706,34 +1010,34 @@ get_value(I, PrevEnv, Val) :-
 
 eval_expression(number(Num), _, _, Num).
 eval_expression(string_(Str), _, _, Str).
-eval_expression(variable(Iden), PrevEnv, _, Value) :- 
+eval_expression(variable(Iden), PrevEnv, _, Value) :-
     (get_value(Iden, PrevEnv, Value) -> true; throw(error(undeclared_variable(Iden)))).
 
 eval_expression(add(E1, E2), PrevEnv, Env, Result) :-
-    eval_expression(E1, PrevEnv, Env, R1),
-    eval_expression(E2, PrevEnv, Env, R2),
+    evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
+    evaluate_expr_env(E2, TempEnv, Env, R2),
     (check_same_datatype(R1, R2) ->
         Result is R1 + R2
     ; Result = throw(error(type_mismatch))).
 
 eval_expression(substract(E1, E2), PrevEnv, Env, Result) :-
-    eval_expression(E1, PrevEnv, Env, R1),
-    eval_expression(E2, PrevEnv, Env, R2),
-    (check_same_datatype(R1, R2) -> 
+    evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
+    evaluate_expr_env(E2, TempEnv, Env, R2),
+    (check_same_datatype(R1, R2) ->
         Result is R1 - R2
     ; Result = throw(error(type_mismatch))).
 
 eval_expression(multiply(E1, E2), PrevEnv, Env, Result) :-
-    eval_expression(E1, PrevEnv, Env, R1),
-    eval_expression(E2, PrevEnv, Env, R2),
-    (check_same_datatype(R1, R2) -> 
+    evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
+    evaluate_expr_env(E2, TempEnv, Env, R2),
+    (check_same_datatype(R1, R2) ->
         Result is R1 * R2
     ; Result = throw(error(type_mismatch))).
 
 eval_expression(divide(E1, E2), PrevEnv, Env, Result) :-
-    eval_expression(E1, PrevEnv, Env, R1),
-    eval_expression(E2, PrevEnv, Env, R2),
-    (check_same_datatype(R1, R2) -> 
+    evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
+    evaluate_expr_env(E2, TempEnv, Env, R2),
+    (check_same_datatype(R1, R2) ->
         (R2 =:= 0 -> throw(error(divide_by_zero)); Result is R1 / R2)
     ; Result = throw(error(type_mismatch))).
 
@@ -773,18 +1077,41 @@ variable(variable(Iden)) --> [Iden], {atom(Iden), not(number(Iden)), not(member(
 number(number(Num)) --> [Num], { number(Num) }.
 string_(string_(String)) --> [String], {string(String)}.
 
-assignment(assign(Iden,=,Expr)) --> variable(Iden),[=],simple_expression(Expr).
+assignment(assign(Iden,=,Expr)) --> variable(Iden),[=],ternary_expression(Expr).
 assignment(assign(Iden,=,Bool)) --> variable(Iden),[=],booleanCondition(Bool).
 assignment(assign(Iden,=,Str)) --> variable(Iden),[=],string_value(Str).
-arithmetic_assign(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr).
-arithmetic_assign(substract_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr).
-arithmetic_assign(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr).
-arithmetic_assign(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr).
+assignment(assign(Iden, +, =, Expr)) --> variable(Iden), [+], [=], ternary_expression(Expr).
+assignment(assign(Iden, -, =, Expr)) --> variable(Iden), [-], [=], ternary_expression(Expr).
+assignment(assign(Iden, *, =, Expr)) --> variable(Iden), [*], [=], ternary_expression(Expr).
+assignment(assign(Iden, /, =, Expr)) --> variable(Iden), [/], [=], ternary_expression(Expr).
 
 assignment_evalutation(assign(Iden, =, Expr), PrevEnv, Env):-
-    is_member_of_program(Iden, PrevEnv),
+    is_member_of_program_var_int(Iden, PrevEnv),
     evaluate_extract(Expr, PrevEnv, TempEnv, Val),
+    update_environment(Iden, Val, TempEnv, Env).
+
+assignment_evalutation(assign(Iden, +, =, Expr), PrevEnv, Env):-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
+    update_environment(Iden, Val, TempEnv, Env).
+
+assignment_evalutation(assign(Iden, -, =, Expr), PrevEnv, Env):-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
+    update_environment(Iden, Val, TempEnv, Env).
+
+assignment_evalutation(assign(Iden, *, =, Expr), PrevEnv, Env):-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
+    update_environment(Iden, Val, TempEnv, Env).
+
+assignment_evalutation(assign(Iden, /, =, Expr), PrevEnv, Env):-
+    is_member_of_program_var_int(Iden, PrevEnv),
+    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
     update_environment(Iden, Val, TempEnv, Env).
 
 is_member_of_program(variable(Iden), Env):-
     memberchk((Iden, _, _, _), Env).
+
+is_member_of_program_var_int(variable(Iden), Env):-
+    memberchk((Iden, var, int, _), Env).
