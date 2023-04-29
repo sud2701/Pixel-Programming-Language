@@ -564,6 +564,10 @@ for_loop_evaluation(Bool, Expr, Cmd, PrevEnv, Env) :-
     ).
 
 is_assignment(assign(variable(_), =, _)).
+is_assignment(assign(variable(_), +, =, _)).
+is_assignment(assign(variable(_), -, =, _)).
+is_assignment(assign(variable(_), *, =, _)).
+is_assignment(assign(variable(_), /, =, _)).
 
 
 % for_loop_evaluation(Bool, _, _, PrevEnv, PrevEnv) :-
