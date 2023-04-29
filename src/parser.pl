@@ -179,6 +179,7 @@ leftRecursionRemovedCommand(command_block(Blk)) --> block(Blk).
 update_variables([], PrevEnv, PrevEnv).
 update_variables([(Var, Type, Datatype, Val)|Rest], PrevEnv, UpdatedEnv) :-
     (select((Var, Type, Datatype, _), PrevEnv, _) ->
+        valid_datatype_value(Datatype, Val),
         replace(PrevEnv, (Var, Type, Datatype, _), (Var, Type, Datatype, Val), NewTempEnv)
     ;
         NewTempEnv = PrevEnv
@@ -484,15 +485,18 @@ eval_print_cmd_(Print, PrevEnv, Env) :-
     (var(TempEnv) -> Env = PrevEnv; Env = TempEnv).
 
 eval_print_cmd(print_string(P), PrevEnv, PrevEnv) :-
-    write(P).
+    write(P),
+    nl.
 
 eval_print_cmd(print_boolean(Bool), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, Env, Result),
-    write(Result).
+    write(Result),
+    nl.
 
 eval_print_cmd(print_expr(Expr), PrevEnv, Env) :-
     evaluate_expr_env(Expr, PrevEnv, Env, Result),
-    write(Result).
+    write(Result),
+    nl.
 
 while_evaluaion(Bool, Cmd, PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
@@ -1059,7 +1063,18 @@ eval_expression(decrement(Iden, -, -), PrevEnv, Env, Result) :-
 
 
 update_environment(variable(Iden), Val, PrevEnv, Env) :-
-    replace(PrevEnv, (Iden, Dec, Dtype, _), (Iden, Dec, Dtype, Val), Env).
+    (select((Iden, Dec, Dtype, _), PrevEnv, _) ->
+        (valid_datatype_value(Dtype, Val) ->
+            replace(PrevEnv, (Iden, Dec, Dtype, _), (Iden, Dec, Dtype, Val), Env)
+        ;
+            throw(error(invalid_datatype, context('Provided value does not match the expected datatype'))),
+            Env = PrevEnv
+        )
+    ;
+        Env = PrevEnv
+    ).
+
+
 
 replace([H|T], H, New, [New|T]).
 replace([H|T], Old, New, [H|NewT]) :-
@@ -1093,23 +1108,39 @@ assignment_evalutation(assign(Iden, =, Expr), PrevEnv, Env):-
 
 assignment_evalutation(assign(Iden, +, =, Expr), PrevEnv, Env):-
     is_member_of_program_var_int(Iden, PrevEnv),
-    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
-    update_environment(Iden, Val, TempEnv, Env).
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Val),
+    evaluate_expr_env(Expr, TempEnv, TempTempEnv, Val2),
+    (check_same_datatype(Val, Val2) -> 
+        NewVal is Val + Val2
+    ; NewVal = throw(error(type_mismatch))),
+    update_environment(Iden, NewVal, TempTempEnv, Env).
 
 assignment_evalutation(assign(Iden, -, =, Expr), PrevEnv, Env):-
     is_member_of_program_var_int(Iden, PrevEnv),
-    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
-    update_environment(Iden, Val, TempEnv, Env).
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Val),
+    evaluate_expr_env(Expr, TempEnv, TempTempEnv, Val2),
+    (check_same_datatype(Val, Val2) -> 
+        NewVal is Val - Val2
+    ; NewVal = throw(error(type_mismatch))),
+    update_environment(Iden, NewVal, TempTempEnv, Env).
 
 assignment_evalutation(assign(Iden, *, =, Expr), PrevEnv, Env):-
     is_member_of_program_var_int(Iden, PrevEnv),
-    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
-    update_environment(Iden, Val, TempEnv, Env).
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Val),
+    evaluate_expr_env(Expr, TempEnv, TempTempEnv, Val2),
+    (check_same_datatype(Val, Val2) -> 
+        NewVal is Val * Val2
+    ; NewVal = throw(error(type_mismatch))),
+    update_environment(Iden, NewVal, TempTempEnv, Env).
 
 assignment_evalutation(assign(Iden, /, =, Expr), PrevEnv, Env):-
     is_member_of_program_var_int(Iden, PrevEnv),
-    evaluate_expr_env(Expr, PrevEnv, TempEnv, Val),
-    update_environment(Iden, Val, TempEnv, Env).
+    evaluate_expr_env(Iden, PrevEnv, TempEnv, Val),
+    evaluate_expr_env(Expr, TempEnv, TempTempEnv, Val2),
+    (check_same_datatype(Val, Val2) -> 
+        (Val2 =:= 0 -> throw(error(divide_by_zero)); NewVal is Val / Val2)
+    ; NewVal = throw(error(type_mismatch))),
+    update_environment(Iden, NewVal, TempTempEnv, Env).
 
 is_member_of_program(variable(Iden), Env):-
     memberchk((Iden, _, _, _), Env).
