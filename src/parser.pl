@@ -1115,4 +1115,4 @@ is_member_of_program(variable(Iden), Env):-
     memberchk((Iden, _, _, _), Env).
 
 is_member_of_program_var_int(variable(Iden), Env):-
-    memberchk((Iden, var, int, _), Env).
+    memberchk((Iden, var, _, _), Env).
