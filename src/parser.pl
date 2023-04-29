@@ -319,45 +319,45 @@ command_evaluation(if(if, Bool, _, Cmd1), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_evaluation(Cmd1, TempEnv, Env).
 
-command_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :-
+command_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :-
+command_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_evaluation(Cmd1, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :-
+command_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_evaluation(Cmd1, TempTempTempEnv, Env).
 
-command_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :-
+command_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_evaluation(Cmd1, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_evaluation(Cmd2, TempTempTempEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :-
+command_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :-
+command_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     else_if_evaluation(Rest, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :-
+command_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_evaluation(Cmd, TempTempTempEnv, Env).
 
-command_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :-
+command_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     else_if_evaluation(Rest, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
@@ -502,26 +502,26 @@ while_evaluaion(Bool, Cmd, PrevEnv, Env) :-
 while_evaluaion(B, _, PrevEnv, Env) :-
     evaluate_boolean_env(B, PrevEnv, Env, false).
 
-else_if_evaluation(elif(elif, Bool, Cmd), PrevEnv, Env) :-
+else_if_evaluation(elif(elif, Bool, Cmd), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_evaluation(Cmd, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, _), PrevEnv, Env) :-
+else_if_evaluation(elif(elif, Bool, _), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, Env, false).
 
-else_if_evaluation(elif(elif, Bool, Cmd, _), PrevEnv, Env) :-
+else_if_evaluation(elif(elif, Bool, Cmd, _), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool,PrevEnv,TempEnv,true),
     command_evaluation(Cmd, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, _, Rest), PrevEnv, Env) :-
+else_if_evaluation(elif(elif, Bool, _, Rest), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv,false),
     else_if_evaluation(Rest, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, Cmd, else, _),PrevEnv,Env) :-
+else_if_evaluation(elif(elif, Bool, Cmd, else, _),PrevEnv,Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv,true),
     command_evaluation(Cmd, TempEnv, Env).
 
-else_if_evaluation(elif(elif, Bool, _, else, Cmd1), PrevEnv, Env) :-
+else_if_evaluation(elif(elif, Bool, _, else, Cmd1), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv,false),
     command_evaluation(Cmd1, TempEnv, Env).
 % for_loop_range_evaluation(Iden, Current, To, Jump, Cmd, PrevEnv, Env) :-
@@ -566,9 +566,10 @@ is_assignment(assign(variable(_), =, _)).
 %     evaluate_boolean_env(Bool, PrevEnv, PrevEnv, false).
 
 
-ternary_expression(Expr) --> simple_expression(Expr).
-ternary_expression(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left(), variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right().
 ternary_expression(ternary_operator(Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left(), booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right().
+ternary_expression(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left(), variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right().
+ternary_expression(Expr) --> simple_expression(Expr).
+ternary_expression(Bool) --> booleanCondition(Bool).
 optional_parenthesis_left() --> ['('].
 optional_parenthesis_left() --> [].
 
@@ -777,45 +778,45 @@ command_ternary_evaluation(if(if, Bool, _, Cmd1), PrevEnv, Env) :-
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_ternary_evaluation(Cmd1, TempEnv, Env).
 
-command_ternary_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :-
+command_ternary_evaluation(if_else(if, Bool, Cmd, else, _), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_ternary_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :-
+command_ternary_evaluation(if_else(if, Bool, _, else, Cmd1),PrevEnv,Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_ternary_evaluation(Cmd1, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_ternary_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :-
+command_ternary_evaluation(if_else(if, Bool, Cmd, else, _, Cmd1), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_ternary_evaluation(Cmd1, TempTempTempEnv, Env).
 
-command_ternary_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :-
+command_ternary_evaluation(if_else(if, Bool, _, else, Cmd1, Cmd2),PrevEnv,Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     command_ternary_evaluation(Cmd1, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_ternary_evaluation(Cmd2, TempTempTempEnv, Env).
 
-command_ternary_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :-
+command_ternary_evaluation(if_else_if(if, Bool, Cmd, _), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_ternary_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :-
+command_ternary_evaluation(if_else_if(if, Bool, _, Rest), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     else_if_evaluation(Rest, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, Env).
 
-command_ternary_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :-
+command_ternary_evaluation(if_else_if(if, Bool, Cmd, _, Cmd), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, true),
     command_ternary_evaluation(Cmd, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
     command_ternary_evaluation(Cmd, TempTempTempEnv, Env).
 
-command_ternary_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :-
+command_ternary_evaluation(if_else_if(if, Bool, _, Rest, Cmd), PrevEnv, Env) :- 
     evaluate_boolean_env(Bool, PrevEnv, TempEnv, false),
     else_if_evaluation(Rest, TempEnv, TempTempEnv),
     update_variables(TempTempEnv, PrevEnv, TempTempTempEnv),
@@ -1010,7 +1011,7 @@ get_value(I, PrevEnv, Val) :-
 
 eval_expression(number(Num), _, _, Num).
 eval_expression(string_(Str), _, _, Str).
-eval_expression(variable(Iden), PrevEnv, _, Value) :-
+eval_expression(variable(Iden), PrevEnv, _, Value) :- 
     (get_value(Iden, PrevEnv, Value) -> true; throw(error(undeclared_variable(Iden)))).
 
 eval_expression(add(E1, E2), PrevEnv, Env, Result) :-
@@ -1023,21 +1024,21 @@ eval_expression(add(E1, E2), PrevEnv, Env, Result) :-
 eval_expression(substract(E1, E2), PrevEnv, Env, Result) :-
     evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
     evaluate_expr_env(E2, TempEnv, Env, R2),
-    (check_same_datatype(R1, R2) ->
+    (check_same_datatype(R1, R2) -> 
         Result is R1 - R2
     ; Result = throw(error(type_mismatch))).
 
 eval_expression(multiply(E1, E2), PrevEnv, Env, Result) :-
     evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
     evaluate_expr_env(E2, TempEnv, Env, R2),
-    (check_same_datatype(R1, R2) ->
+    (check_same_datatype(R1, R2) -> 
         Result is R1 * R2
     ; Result = throw(error(type_mismatch))).
 
 eval_expression(divide(E1, E2), PrevEnv, Env, Result) :-
     evaluate_expr_env(E1, PrevEnv, TempEnv, R1),
     evaluate_expr_env(E2, TempEnv, Env, R2),
-    (check_same_datatype(R1, R2) ->
+    (check_same_datatype(R1, R2) -> 
         (R2 =:= 0 -> throw(error(divide_by_zero)); Result is R1 / R2)
     ; Result = throw(error(type_mismatch))).
 
