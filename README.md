@@ -22,7 +22,7 @@
 - Python3 Download ([Link 🚀](https://www.python.org/downloads/))
 - Sample test programs are saved in the 'data' folder with .pixel extension
 ### Installing Prolog
-#### Arch Linux
+#### Linux
 ```
 $ apt-get install swi-prolog
 ```
