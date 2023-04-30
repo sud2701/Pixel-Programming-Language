@@ -6,7 +6,7 @@ pixel(Lexername) :-
     write(X),
     term_to_atom(Y, X),
     write('Pixel Programming Language v1.0'), nl,
-    write('SER 502 - Spring 2021 - Team 16'), nl,
+    write('SER 502 - Spring 2023 - Team 16'), nl,
     program(Tree, Y, []),
     write('List of Tokens:'), nl, write(Y),nl, nl,
     write('Parse Tree:'), nl, write(Tree),nl, nl, write('Output:'), nl,
