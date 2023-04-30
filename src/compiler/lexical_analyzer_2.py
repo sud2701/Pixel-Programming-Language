@@ -69,7 +69,7 @@ def lexical_analyzer(filename):
             token = token.replace("'", '')
             file.write('{}\n'.format(token))
         print("Writing Tokens in " + tokensFile)
-    os.system("swipl -g \"main('" + tokensFile + "')\" main.pl")
+    os.system("swipl -g \"main('" + tokensFile + "')\" ../runtime/main.pl")
 
 
 if __name__ == "__main__":

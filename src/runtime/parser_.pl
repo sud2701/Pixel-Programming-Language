@@ -17,8 +17,7 @@ pixel(Lexername) :-
 program(main(CodeBlock)) --> [main], block(CodeBlock).
 
 program_eval(Prog, PrevEnv, Env) :-
-    program_eval_(Prog, PrevEnv, Env),
-    write(Env).
+    program_eval_(Prog, PrevEnv, Env).
 
 program_eval_(main(CodeBlock), PrevEnv, Env) :-
     block_evaluation(CodeBlock, PrevEnv, Env).
