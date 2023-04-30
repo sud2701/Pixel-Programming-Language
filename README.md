@@ -1,4 +1,5 @@
-# [![N|Solid](https://www.creativefabrica.com/wp-content/uploads/2022/05/21/Pixel-Logo-Graphics-30905280-1-1-580x387.jpg)](https://www.creativefabrica.com/wp-content/uploads/2022/05/21/Pixel-Logo-Graphics-30905280-1-1-580x387.jpg) Programming Language
+# [![N|Solid](https://www.creativefabrica.com/wp-content/uploads/2022/05/21/Pixel-Logo-Graphics-30905280-1-1-580x387.jpg)](https://www.creativefabrica.com/wp-content/uploads/2022/05/21/Pixel-Logo-Graphics-30905280-1-1-580x387.jpg) 
+# Programming Language
 # SER502-Spring2023-Team16
 ### Pixel is a  programming language developed to compute trivial arithmetic operations, conditions, ternerary expressions and loops.
 
@@ -7,7 +8,7 @@
 2. Sudheer Reddy Kunduru
 3. Jay Yogeshkumar Patel
 4. Manan Hashmukbhai Patel
-5. Jashmin Patel
+5. Jashmin Mineshkumar Patel
 ## ⚙ Tools Used
 - SWI-Prolog
 - Python3
