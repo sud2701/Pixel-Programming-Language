@@ -1,4 +1,4 @@
-﻿SER 502 Final Project
+SER 502 Final Project
 
 
 Team 16
@@ -19,24 +19,29 @@ Swapnil Mukeshbhai Chadotra
 
 * Studied and analyzed the syntax and design of similar imperative languages and determined the best practices used in terms of syntax
 * Created grammar for introductory features of the language
+* Created evaluator predicates for complex commands, control structures and expression evaluation
+* Worked on resolving the errors and finetuning of the parser
 
 
 Jay Yogeshbhai Patel
 
 
 * Analyzed various tools for performing lexical analysis and parsing
+* Worked on the parser, created parse tree nodes for declarations and assignments
 
 
 Manan Hasmukhkumar Patel
 
 
 * Performed Research on techniques and tools used for semantic evaluation and interpretation/execution of the program code.
+* Worked on the Definite Clause Grammar, contributed to the implementation of parse tree generation
 
 
 Jashmin Mineshkumar Patel
 
 
 * Determined the best grammar and BNF notations and studied techniques used by modern programming languages for performing lexical analysis
+* Created sample programs for testing and worked on the evaluation of simpler commands and statements
 
 
 Sudheer Reddy Kunduru
@@ -44,6 +49,8 @@ Sudheer Reddy Kunduru
 
 * Finalized the semantics of the language
 * Worked on complex features of the grammar including control structures and typing
+* Worked on the implementation of the lexical analyzer
+* Created sample programs for testing
 
 
 
