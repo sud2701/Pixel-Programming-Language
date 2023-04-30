@@ -3,6 +3,9 @@ from tokenize import tokenize
 from io import BytesIO
 import tkinter as tk
 from tkinter import filedialog
+from pyswip import Prolog
+import sys
+import os
 
 keywords = ["main", "const", "var", "int", "bool",
             "str", "if", "else", "for", "while", "print", "true", "false", "not", "and", "or", "elseif"]
@@ -61,7 +64,6 @@ def lexical_analyzer(filename):
     tokens = tokens[:-2]
     tokens += "]"
     print(tokens)
-    return tokens
 
 
 if __name__ == "__main__":

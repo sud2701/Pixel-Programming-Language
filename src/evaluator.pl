@@ -1,52 +1,20 @@
-:- module(program, [program/3]).
-:- table main_block/2.
-
-pixel(Lexername) :-
-    process_create(path('python'), [Lexername], [stdout(pipe(In))]),
-    read_string(In, _, X),
-    write(X),
-    term_to_atom(Y, X),
-    write('Pixel Programming Language v1.0'), nl,
-    write('SER 502 - Spring 2021 - Team 16'), nl,
-    program(Tree, Y, []),
-    write('List of Tokens:'), nl, write(Y),nl, nl,
-    write('Parse Tree:'), nl, write(Tree),nl, nl, write('Output:'), nl,
-    program_eval(Tree, [], Output),
-    write(Output).
-
-
-program(main(CodeBlock)) --> [main], block(CodeBlock).
-
+:- module(program_eval, [program_eval/3]).
 program_eval(Prog, PrevEnv, Env) :-
-    program_eval_(Prog, PrevEnv, Env),
-    write(Env).
+    program_eval_(Prog, PrevEnv, Env).
 
 program_eval_(main(CodeBlock), PrevEnv, Env) :-
     block_evaluation(CodeBlock, PrevEnv, Env).
-
-
-block(empty()) --> ['{'], ['}'].
-block(code_block(CodeBlock)) --> ['{'], sub_block(CodeBlock),['}'].
 
 block_evaluation(code_block(SubBlock), PrevEnv, Env):-
     sub_block_evaluation(SubBlock, PrevEnv, Env).
 
 block_evaluation(empty(), PrevEnv, PrevEnv).
 
-sub_block(sub_block(Dec)) --> declaration(Dec).
-sub_block(sub_block(Dec, Rest)) --> declaration(Dec), sub_block(Rest).
-sub_block(sub_block(Cmd, Rest)) --> leftRecursionRemovedCommand(Cmd), sub_block(Rest).
-sub_block(sub_block(Cmd)) --> leftRecursionRemovedCommand(Cmd).
-sub_block([]) --> [].
-
 sub_block_evaluation(sub_block(Dec, Rest), PrevEnv, Env) :- declaration_evaluation(Dec, PrevEnv, TempEnv), sub_block_evaluation(Rest, TempEnv, Env).
 sub_block_evaluation(sub_block(Cmd, Rest), PrevEnv, Env) :- command_evaluation(Cmd, PrevEnv, TempEnv), sub_block_evaluation(Rest, TempEnv, Env).
 sub_block_evaluation(sub_block(Dec), PrevEnv, Env) :- declaration_evaluation(Dec, PrevEnv, Env).
 sub_block_evaluation(sub_block(Cmd), PrevEnv, Env) :- command_evaluation(Cmd, PrevEnv, Env).
 sub_block_evaluation([], Env, Env).
-
-declaration(Dec) --> const_declaration(Dec).
-declaration(Dec) --> var_declaration(Dec).
 
 declaration_evaluation(var_declaration(var, Datatype, Iden, ';', Rest), PrevEnv, Env) :-
     is_variable_declared(Iden, Datatype, PrevEnv, TempEnv),
@@ -69,12 +37,6 @@ declaration_evaluation(const_declaration(const, Datatype, Iden, =, Val, ;, Rest)
 declaration_evaluation(const_declaration(const, Datatype, Iden, =, Val, ';'), PrevEnv, Env) :-
     is_const_declared(Iden, Datatype, Val, PrevEnv, Env).
 
-const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;].
-const_declaration(const_declaration(const, Dtype, Iden, =, Bool, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Bool), [;].
-const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;)) --> [const], variable_datatype(Dtype), variable(Iden), [=], ternary_expression(Expr), [;].
-const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;], declaration(Rest).
-const_declaration(const_declaration(const, Dtype, Iden, =, Bool, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Bool), [;], declaration(Rest).
-const_declaration(const_declaration(const, Dtype, Iden, =, Expr, ;, Rest)) --> [const], variable_datatype(Dtype), variable(Iden), [=], ternary_expression(Expr), [;], declaration(Rest).
 
 is_const_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, const, Datatype, N) | TempEnv]) :-
     evaluate_extract(Val, PrevEnv, TempEnv, N),
@@ -88,21 +50,6 @@ evaluate_extract(Val, PrevEnv, Env, N) :-
     extract_value(Val, PrevEnv, TempEnv, N),
     (var(TempEnv) -> Env = PrevEnv; Env = TempEnv).
 
-% is_const_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, const, Datatype, N) | PrevEnv]) :-
-%     extract_value(Val, PrevEnv, _, N),
-%     \+ member((Iden, _, _, _), PrevEnv),
-%     ( valid_datatype_value(Datatype, N)
-%     -> true
-%     ;  format('Error: invalid value "~w" for datatype "~w"~n', [N, Datatype]), fail
-%     ).
-
-var_declaration(var_declaration(var, Dtype, Iden, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [;].
-var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;].
-var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;].
-var_declaration(var_declaration(var, Dtype, Iden, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [;], declaration(Rest).
-var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;], declaration(Rest).
-var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;, Rest)) --> [var], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;], declaration(Rest).
-
 is_variable_declared(variable(Iden), datatype(Datatype), PrevEnv, [(Iden, var, Datatype, _) | PrevEnv]) :-
     (\+ member((Iden, _, _, _), PrevEnv); throw(error(variable_already_declared, [Iden]))).
 
@@ -112,17 +59,6 @@ is_variable_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, v
     -> ( valid_datatype_value(Datatype, N)
     -> true ;  format('Error: invalid value "~w" for datatype "~w"~n', [N, Datatype]), fail)
     ; throw(error(variable_already_declared, [Iden]))).
-
-% is_variable_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, var, Datatype, N) | Env]) :-
-%     extract_value(Val, PrevEnv, Env, N),
-%     (\+ member((Iden, _, _, _), Env)
-%     -> ( valid_datatype_value(Datatype, N)
-%     -> true ;  format('Error: invalid value "~w" for datatype "~w"~n', [N, Datatype]), fail)
-%     ; throw(error(variable_already_declared, [Iden]))).
-
-variable_datatype(datatype(int)) --> [int].
-variable_datatype(datatype(bool)) --> [bool].
-variable_datatype(datatype(str)) --> [str].
 
 valid_datatype_value(int, Value) :-
     integer(Value).
@@ -135,63 +71,6 @@ extract_value(number(N), _, _, N).
 extract_value(Bool, PrevEnv, Env, B) :- boolean_evaluation(Bool, PrevEnv, Env, B).
 extract_value(Expr, PrevEnv, Env, Num) :- eval_expression(Expr, PrevEnv, Env, Num).
 extract_value(Expr, PrevEnv, Env, Num) :- eval_ternary_expression(Expr, PrevEnv, Env, Num).
-
-
-leftRecursionRemovedCommand(command_assign(T)) --> assignment(T), [;].
-leftRecursionRemovedCommand(command_assign(T,Cmd)) --> assignment(T), [;], leftRecursionRemovedCommand(Cmd).
-
-leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-
-leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-
-leftRecursionRemovedCommand(for_loop_range(Iden, in, range, From, To, Jump, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(for_loop_range_single(Iden, in, range, To, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(To), [')'], leftRecursionRemovedCommand(Cmd).
-
-leftRecursionRemovedCommand(for_loop_range(Iden, in, range, From, To, Jump, Cmd, Cmd1)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(for_loop_range_single(Iden, in, range, To, Cmd, Cmd1)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(To), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-
-leftRecursionRemovedCommand(if_else(if, Bool, Cmd, else, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), [else], leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(if_else_if(if, Bool, Cmd, Rest)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest).
-leftRecursionRemovedCommand(if(if, Bool, Cmd)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(if_else(if, Bool, Cmd, else, Cmd1, Cmd2)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), [else], leftRecursionRemovedCommand(Cmd1), leftRecursionRemovedCommand(Cmd2).
-leftRecursionRemovedCommand(if_else_if(if, Bool, Cmd, Rest, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest), leftRecursionRemovedCommand(Cmd1).
-leftRecursionRemovedCommand(if(if, Bool, Cmd, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-
-leftRecursionRemovedCommand(ternary_operator(Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right, [;], leftRecursionRemovedCommand(Cmd).
-
-leftRecursionRemovedCommand(ternary_operator(Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right, [;].
-
-leftRecursionRemovedCommand(while_loop(Boolean, Cmd)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(while_loop(Boolean, Cmd, Cmd1)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd), leftRecursionRemovedCommand(Cmd1).
-
-leftRecursionRemovedCommand(print(Arg)) --> [print], print_statement(Arg), [;].
-leftRecursionRemovedCommand(print(Arg,Cmd)) --> [print], print_statement(Arg), [;],leftRecursionRemovedCommand(Cmd).
-
-leftRecursionRemovedCommand(increment(Iden, +, +)) --> variable(Iden), [+], [+], [;].
-leftRecursionRemovedCommand(increment(Iden, +, +, Cmd)) --> variable(Iden), [+], [+], [;], leftRecursionRemovedCommand(Cmd).
-leftRecursionRemovedCommand(decrement(Iden, -, -)) --> variable(Iden), [-], [-], [;].
-leftRecursionRemovedCommand(decrement(Iden, -, -, Cmd)) --> variable(Iden), [-], [-], [;], leftRecursionRemovedCommand(Cmd).
-
-
-% leftRecursionRemovedCommand(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(add_(Iden, +, =, Expr, Cmd)) --> variable(Iden), [+], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-% leftRecursionRemovedCommand(sub_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(sub_(Iden, -, =, Expr, Cmd)) --> variable(Iden), [-], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-% leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr, Cmd)) --> variable(Iden), [*], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-% leftRecursionRemovedCommand(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(divide_(Iden, /, =, Expr, Cmd)) --> variable(Iden), [/], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-leftRecursionRemovedCommand(command_block(Blk)) --> block(Blk).
 
 update_variables([], PrevEnv, PrevEnv).
 update_variables([(Var, Type, Datatype, Val)|Rest], PrevEnv, UpdatedEnv) :-
@@ -501,7 +380,7 @@ eval_print_cmd_(Print, PrevEnv, Env) :-
     eval_print_cmd(Print, PrevEnv, TempEnv),
     (var(TempEnv) -> Env = PrevEnv; Env = TempEnv).
 
-eval_print_cmd(print_string(string_(P)), PrevEnv, PrevEnv) :-
+eval_print_cmd(print_string(P), PrevEnv, PrevEnv) :-
     write(P),
     nl.
 
@@ -586,21 +465,6 @@ is_assignment(assign(variable(_), -, =, _)).
 is_assignment(assign(variable(_), *, =, _)).
 is_assignment(assign(variable(_), /, =, _)).
 
-
-% for_loop_evaluation(Bool, _, _, PrevEnv, PrevEnv) :-
-%     evaluate_boolean_env(Bool, PrevEnv, PrevEnv, false).
-
-
-ternary_expression(ternary_operator(Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left(), booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right().
-ternary_expression(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left(), variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right().
-ternary_expression(Expr) --> simple_expression(Expr).
-ternary_expression(Bool) --> booleanCondition(Bool).
-optional_parenthesis_left() --> ['('].
-optional_parenthesis_left() --> [].
-
-optional_parenthesis_right() --> [')'].
-optional_parenthesis_right() --> [].
-
 eval_ternary_expression(Expr, PrevEnv, Env, Result) :-
     evaluate_expr_env(Expr, PrevEnv, Env, Result).
 
@@ -615,66 +479,6 @@ eval_ternary_expression(ternary_operator(Bool, '?', Expr1, :, Expr2), PrevEnv, E
     (BoolResult = true -> eval_ternary_expression(Expr1, TempEnv, Env, Result)
     ; eval_ternary_expression(Expr2, TempEnv, Env, Result)).
 
-else_if_ladder(elif(elif, Bool, Cmd)) --> [else, if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd).
-else_if_ladder(elif(elif, Bool, Cmd, Rest)) --> [else, if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), else_if_ladder(Rest).
-else_if_ladder(elif(elif, Bool, Cmd, else, Cmd1)) --> [else, if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), [else], leftRecursionRemovedCommand(Cmd1).
-
-commandForTernary(command_assign(T)) --> assignment(T).
-commandForTernary(command_assign(T,Cmd)) --> assignment(T), [;], commandForTernary(Cmd).
-
-commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd).
-
-commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-commandForTernary(for_loop(for, '(', Dec, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], declaration(Dec), booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], simple_expression(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-commandForTernary(for_loop(for, '(', Asg, ;, Bool, ;, Expr, ')', Cmd, Cmd1)) --> [for], ['('], assignment(Asg), [;], booleanCondition(Bool), [;], assignment(Expr), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-
-commandForTernary(for_loop_range(Iden, in, range, From, To, Jump, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(for_loop_range_single(Iden, in, range, To, Cmd)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(To), [')'], leftRecursionRemovedCommand(Cmd).
-
-commandForTernary(for_loop_range(Iden, in, range, From, To, Jump, Cmd, Cmd1)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(From), [','], simple_expression(To), [','], simple_expression(Jump), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-commandForTernary(for_loop_range_single(Iden, in, range, To, Cmd, Cmd1)) --> [for], variable(Iden), [in], [range], ['('], simple_expression(To), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-
-commandForTernary(if_else(if, Bool, Cmd, else, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], commandForTernary(Cmd), [else], leftRecursionRemovedCommand(Cmd1).
-commandForTernary(if_else_if(if, Bool, Cmd, Rest)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest).
-commandForTernary(if(if, Bool, Cmd)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd).
-
-commandForTernary(if_else(if, Bool, Cmd, else, Cmd1, Cmd2)) --> [if], ['('], booleanCondition(Bool), [')'], commandForTernary(Cmd), [else], leftRecursionRemovedCommand(Cmd1), commandForTernary(Cmd2).
-commandForTernary(if_else_if(if, Bool, Cmd, Rest, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd),  else_if_ladder(Rest), commandForTernary(Cmd1).
-commandForTernary(if(if, Bool, Cmd, Cmd1)) --> [if], ['('], booleanCondition(Bool), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-
-commandForTernary(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right, [;], commandForTernary(Cmd).
-commandForTernary(ternary_operator(Bool, '?', Expr1, :, Expr2, Cmd)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], leftRecursionRemovedCommand(Expr1), [:], leftRecursionRemovedCommand(Expr2), optional_parenthesis_right, commandForTernary(Cmd).
-commandForTernary(ternary_operator(Iden, Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, variable(Iden), [=], booleanCondition(Bool), ['?'], ternary_expression(Expr1), [:], ternary_expression(Expr2), optional_parenthesis_right.
-commandForTernary(ternary_operator(Bool, '?', Expr1, :, Expr2)) --> optional_parenthesis_left, booleanCondition(Bool), ['?'], commandForTernary(Expr1), [:], commandForTernary(Expr2), optional_parenthesis_right.
-
-
-commandForTernary(while_loop(Boolean, Cmd)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd).
-commandForTernary(while_loop(Boolean, Cmd, Cmd1)) --> [while], ['('], booleanCondition(Boolean), [')'], leftRecursionRemovedCommand(Cmd), commandForTernary(Cmd1).
-
-commandForTernary(print(Arg)) --> [print], print_statement(Arg).
-commandForTernary(print(Arg, Cmd)) --> [print], print_statement(Arg), [;], commandForTernary(Cmd).
-
-commandForTernary(increment(Iden, +, +)) --> variable(Iden), [+], [+].
-commandForTernary(increment(Iden, +, +, Cmd)) --> variable(Iden), [+], [+], [;], commandForTernary(Cmd).
-
-commandForTernary(decrement(Iden, -, -)) --> variable(Iden), [-], [-].
-commandForTernary(decrement(Iden, -, -, Cmd)) --> variable(Iden), [-], [-], [;], commandForTernary(Cmd).
-
-commandForTernary(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr).
-commandForTernary(add_(Iden, +, =, Expr, Cmd)) --> variable(Iden), [+], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
-
-commandForTernary(sub_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr).
-commandForTernary(sub_(Iden, -, =, Expr, Cmd)) --> variable(Iden), [-], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
-
-commandForTernary(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr).
-commandForTernary(multiply_(Iden, *, =, Expr, Cmd)) --> variable(Iden), [*], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
-
-commandForTernary(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr).
-commandForTernary(divide_(Iden, /, =, Expr, Cmd)) --> variable(Iden), [/], [=], simple_expression(Expr), [;], commandForTernary(Cmd).
 
 evaluate_command_for_ternary_env(Cmd, PrevEnv, Env) :-
     command_ternary_evaluation(Cmd, PrevEnv, TempEnv),
@@ -949,17 +753,6 @@ command_ternary_evaluation(divide_(Iden, /, =, Expr, Cmd), PrevEnv, Env) :-
     update_environment(Iden, Result, TempEnv, TempTempEnv),
     command_ternary_evaluation(Cmd, TempTempEnv, Env).
 
-booleanCondition(boolean_true(true)) --> [true].
-booleanCondition(boolean_false(false)) --> [false].
-booleanCondition(boolean_equals(E, == , E1)) --> simple_expression(E), ['=', '='], simple_expression(E1).
-booleanCondition(boolean_greater(E, > , E1)) --> simple_expression(E), ['>'], simple_expression(E1).
-booleanCondition(boolean_less(E, < , E1)) --> simple_expression(E), ['<'], simple_expression(E1).
-booleanCondition(boolean_greater_equal(E, >= , E1)) --> simple_expression(E), ['>', '='], simple_expression(E1).
-booleanCondition(boolean_less_equal(E, <= , E1)) --> simple_expression(E), ['<', '='], simple_expression(E1).
-booleanCondition(boolean_negation(not, B)) --> ['not'], booleanCondition(B).
-booleanCondition(boolean_negation(!, B)) --> ['!'], booleanCondition(B).
-booleanCondition(boolean_not_equal(E, '!=', E1)) --> simple_expression(E), ['!', '='], simple_expression(E1).
-
 evaluate_boolean_env(Bool, PrevEnv, Env, Result) :-
     boolean_evaluation(Bool, PrevEnv, TempEnv, Result),
     (var(TempEnv) -> Env = PrevEnv; Env = TempEnv).
@@ -1010,22 +803,6 @@ compare_value(X, X, true).
 compare_value(X, Y, false) :- \+ X = Y.
 negate(true, false).
 negate(false, true).
-
-simple_expression(Str) --> string_(Str).
-simple_expression(E0) --> e1(E1), e0(E1, E0).
-simple_expression(increment(Iden, +, +)) --> variable(Iden), [+], [+].
-simple_expression(decrement(Iden, -, -)) --> variable(Iden), [-], [-].
-
-e0(EIn, EOut) --> [+], e1(E1), e0(add(EIn, E1), EOut).
-e0(EIn, EOut) --> [-], e1(E1), e0(substract(EIn, E1), EOut).
-e0(E, E) --> [].
-e1(E1) --> e2(E2), e1_(E2, E1).
-e1_(EIn, EOut) --> [*], e2(E2), e1_(multiply(EIn, E2), EOut).
-e1_(EIn, EOut) --> [/], e2(E2), e1_(divide(EIn, E2), EOut).
-e1_(E, E) --> [].
-e2(parenthesis(E)) --> ['('], simple_expression(E), [')'].
-e2(I) --> variable(I).
-e2(N) --> number(N).
 
 check_same_datatype(Val1, Val2) :-
     ((number(Val1), number(Val2));
@@ -1100,27 +877,6 @@ update_environment(variable(Iden), Val, PrevEnv, Env) :-
 replace([H|T], H, New, [New|T]).
 replace([H|T], Old, New, [H|NewT]) :-
     replace(T, Old, New, NewT).
-
-print_statement(print_string(Value)) --> ['('], string_(Value), [')'].
-print_statement(print_boolean(Bool)) --> ['('], booleanCondition(Bool), [')'].
-print_statement(print_expr(Expression)) --> ['('], simple_expression(Expression), [')'].
-
-
-string_value(string_(Variable), [Variable | Tail], Tail) :- string(Variable).
-
-variable(variable(Iden)) --> [Iden], {atom(Iden), not(number(Iden)), not(member(Iden, [int, float, bool, string, true, false, for,
-    if, elif, else, while, range, and, or, not, in, range, <, >, <=, >=, ==,
-    '!=', ++, --, +, -, *, /]))}.
-number(number(Num)) --> [Num], { number(Num) }.
-string_(string_(String)) --> [String], {string(String)}.
-
-assignment(assign(Iden,=,Expr)) --> variable(Iden),[=],ternary_expression(Expr).
-assignment(assign(Iden,=,Bool)) --> variable(Iden),[=],booleanCondition(Bool).
-assignment(assign(Iden,=,Str)) --> variable(Iden),[=],string_value(Str).
-assignment(assign(Iden, +, =, Expr)) --> variable(Iden), [+], [=], ternary_expression(Expr).
-assignment(assign(Iden, -, =, Expr)) --> variable(Iden), [-], [=], ternary_expression(Expr).
-assignment(assign(Iden, *, =, Expr)) --> variable(Iden), [*], [=], ternary_expression(Expr).
-assignment(assign(Iden, /, =, Expr)) --> variable(Iden), [/], [=], ternary_expression(Expr).
 
 assignment_evalutation(assign(Iden, =, Expr), PrevEnv, Env):-
     is_member_of_program_var_int(Iden, PrevEnv),

@@ -1,4 +1,3 @@
-:- module(program, [program/3]).
 :- table main_block/2.
 
 pixel(Lexername) :-
@@ -88,14 +87,6 @@ evaluate_extract(Val, PrevEnv, Env, N) :-
     extract_value(Val, PrevEnv, TempEnv, N),
     (var(TempEnv) -> Env = PrevEnv; Env = TempEnv).
 
-% is_const_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, const, Datatype, N) | PrevEnv]) :-
-%     extract_value(Val, PrevEnv, _, N),
-%     \+ member((Iden, _, _, _), PrevEnv),
-%     ( valid_datatype_value(Datatype, N)
-%     -> true
-%     ;  format('Error: invalid value "~w" for datatype "~w"~n', [N, Datatype]), fail
-%     ).
-
 var_declaration(var_declaration(var, Dtype, Iden, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [;].
 var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], simple_expression(Expr), [;].
 var_declaration(var_declaration(var, Dtype, Iden, =, Expr, ;)) --> [var], variable_datatype(Dtype), variable(Iden), [=], booleanCondition(Expr), [;].
@@ -112,13 +103,6 @@ is_variable_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, v
     -> ( valid_datatype_value(Datatype, N)
     -> true ;  format('Error: invalid value "~w" for datatype "~w"~n', [N, Datatype]), fail)
     ; throw(error(variable_already_declared, [Iden]))).
-
-% is_variable_declared(variable(Iden), datatype(Datatype), Val, PrevEnv, [(Iden, var, Datatype, N) | Env]) :-
-%     extract_value(Val, PrevEnv, Env, N),
-%     (\+ member((Iden, _, _, _), Env)
-%     -> ( valid_datatype_value(Datatype, N)
-%     -> true ;  format('Error: invalid value "~w" for datatype "~w"~n', [N, Datatype]), fail)
-%     ; throw(error(variable_already_declared, [Iden]))).
 
 variable_datatype(datatype(int)) --> [int].
 variable_datatype(datatype(bool)) --> [bool].
@@ -177,19 +161,6 @@ leftRecursionRemovedCommand(increment(Iden, +, +)) --> variable(Iden), [+], [+],
 leftRecursionRemovedCommand(increment(Iden, +, +, Cmd)) --> variable(Iden), [+], [+], [;], leftRecursionRemovedCommand(Cmd).
 leftRecursionRemovedCommand(decrement(Iden, -, -)) --> variable(Iden), [-], [-], [;].
 leftRecursionRemovedCommand(decrement(Iden, -, -, Cmd)) --> variable(Iden), [-], [-], [;], leftRecursionRemovedCommand(Cmd).
-
-
-% leftRecursionRemovedCommand(add_(Iden, +, =, Expr)) --> variable(Iden), [+], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(add_(Iden, +, =, Expr, Cmd)) --> variable(Iden), [+], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-% leftRecursionRemovedCommand(sub_(Iden, -, =, Expr)) --> variable(Iden), [-], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(sub_(Iden, -, =, Expr, Cmd)) --> variable(Iden), [-], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-% leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr)) --> variable(Iden), [*], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(multiply_(Iden, *, =, Expr, Cmd)) --> variable(Iden), [*], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
-
-% leftRecursionRemovedCommand(divide_(Iden, /, =, Expr)) --> variable(Iden), [/], [=], simple_expression(Expr), [;].
-% leftRecursionRemovedCommand(divide_(Iden, /, =, Expr, Cmd)) --> variable(Iden), [/], [=], simple_expression(Expr), [;], leftRecursionRemovedCommand(Cmd).
 
 leftRecursionRemovedCommand(command_block(Blk)) --> block(Blk).
 
